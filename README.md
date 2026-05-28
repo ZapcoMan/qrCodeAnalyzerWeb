@@ -1,5 +1,6 @@
 # 二维码解析器 Web 项目
 
+
 <div align="center">
 
 ![https://img.shields.io/badge/Python-3.10+-blue](https://img.shields.io/badge/Python-3.10%2B-blue)
@@ -14,6 +15,7 @@
 [快速开始](#-快速开始) • [项目结构](#-项目结构) • [API 文档](#-api-文档) • [技术特性](#-技术特性)
 
 </div>
+
 
 ---
 
@@ -45,7 +47,7 @@
 
 ## 🚀 快速开始
 
-### ⚡ 方式一：同时启动（推荐）
+### ⚡ 方式一：快速启动（推荐）
 
 **1. 启动后端服务**
 
@@ -119,7 +121,7 @@ qrCodeAnalyzerWeb/
     └── 📂 src/                      # 源代码
         ├── 📄 main.ts               # 入口文件
         ├── 📄 App.vue               # 根组件
-        ├── 📄 style.css             # 全局样式
+        ├── 📄 style.css             #       全局样式
         └── 📂 components/           # 组件目录
             └── QRCodeDecoder.vue    # 二维码解析组件
 ```
