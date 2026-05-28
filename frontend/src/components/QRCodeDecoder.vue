@@ -12,6 +12,7 @@ const selectedFile = ref<File | null>(null)
 const isLoading = ref(false)
 const result = ref<DecodeResult | null>(null)
 const uploadAreaRef = ref<HTMLElement | null>(null)
+const fileInputRef = ref<HTMLInputElement | null>(null)
 
 const handleFileSelect = (event: Event) => {
   const target = event.target as HTMLInputElement
@@ -44,6 +45,10 @@ const handleDrop = (event: DragEvent) => {
   if (file && file.type.startsWith('image/')) {
     selectedFile.value = file
   }
+}
+
+const openFileDialog = () => {
+  fileInputRef.value?.click()
 }
 
 const decodeQRCode = async () => {
@@ -86,12 +91,13 @@ const decodeQRCode = async () => {
     <div 
       ref="uploadAreaRef"
       class="upload-area" 
-      @click="() => (document.getElementById('fileInput') as HTMLInputElement)?.click()"
+      @click="openFileDialog"
       @dragover="handleDragOver"
       @dragleave="handleDragLeave"
       @drop="handleDrop"
     >
       <input 
+        ref="fileInputRef"
         type="file" 
         id="fileInput" 
         accept="image/*" 
