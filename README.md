@@ -18,7 +18,7 @@
 ### 方法一：使用 git 克隆项目（推荐）
 
 ```bash 
-git clone https://github.com/codervibe/QRCodeAnalyze.git 
+git clone https://github.com/codervibe/QRCodeAnalyzeWeb.git 
 cd QRCodeAnalyze 
 pip install -r requirements.txt 
 python main.py
