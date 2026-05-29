@@ -21,6 +21,45 @@ def generate_temp_filename() -> str:
 
 @qrcode_bp.route('/decode', methods=['POST'])
 def decode_qr_endpoint():
+    """
+    解析上传图片中的二维码
+    ---
+    tags:
+      - 二维码解析
+    consumes:
+      - multipart/form-data
+    parameters:
+      - name: file
+        in: formData
+        type: file
+        required: true
+        description: 包含二维码的图片文件（支持PNG、JPG、GIF、BMP、WebP格式）
+    responses:
+      200:
+        description: 解析成功
+        schema:
+          type: object
+          properties:
+            success:
+              type: boolean
+              example: true
+            data:
+              type: object
+              properties:
+                result:
+                  type: string
+                  example: https://example.com
+                type:
+                  type: string
+                  example: QRCODE
+            code:
+              type: integer
+              example: 200
+      400:
+        description: 请求参数错误或无法解析二维码
+      500:
+        description: 服务器内部错误
+    """
     try:
         if 'file' not in request.files:
             return jsonify(APIResponse.error_response('没有上传文件', 400).to_dict()), 400
@@ -77,6 +116,50 @@ def decode_qr_endpoint():
 
 @qrcode_bp.route('/decode_url', methods=['POST'])
 def decode_qr_from_url():
+    """
+    通过URL解析图片中的二维码
+    ---
+    tags:
+      - 二维码解析
+    consumes:
+      - application/json
+    parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: object
+          properties:
+            url:
+              type: string
+              example: https://example.com/qrcode.png
+              description: 包含二维码的图片URL
+    responses:
+      200:
+        description: 解析成功
+        schema:
+          type: object
+          properties:
+            success:
+              type: boolean
+              example: true
+            data:
+              type: object
+              properties:
+                result:
+                  type: string
+                  example: https://example.com
+                type:
+                  type: string
+                  example: QRCODE
+            code:
+              type: integer
+              example: 200
+      400:
+        description: 请求参数错误或无法解析二维码
+      500:
+        description: 服务器内部错误
+    """
     try:
         data = request.json
         if not data or 'url' not in data:
