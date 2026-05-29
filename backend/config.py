@@ -6,9 +6,10 @@ class Config:
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB
     ALLOWED_EXTENSIONS: Set[str] = {'png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp'}
     DEBUG = False
-    
+    REDIS_PASSWORD = "admin"
     # Redis 配置（用于缓存）
     REDIS_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
+    REDIS_PASSWORD = os.environ.get(REDIS_PASSWORD, None)
     
     # 限流配置
     RATELIMIT_STORAGE_URI = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
@@ -19,6 +20,8 @@ class Config:
 
 class DevelopmentConfig(Config):
     DEBUG = True
+    # 开发环境使用内存存储，避免依赖 Redis
+    RATELIMIT_STORAGE_URI = "memory://"
 
 class ProductionConfig(Config):
     DEBUG = False
