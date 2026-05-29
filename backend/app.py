@@ -9,6 +9,7 @@ from config import config_map
 from src.routes.qrcode import qrcode_bp
 from src.schemas.response import APIResponse
 from src.utils.logger import setup_logger
+from src.utils.cache import cache_manager
 
 logger = setup_logger()
 
@@ -18,6 +19,8 @@ def create_app(config_name: str = 'default') -> Flask:
     app.config.from_object(config_map[config_name])
     
     CORS(app)
+    
+    cache_manager.init_app(app)
     
     limiter = Limiter(
         get_remote_address,

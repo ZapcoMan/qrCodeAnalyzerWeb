@@ -1,5 +1,6 @@
 import os
 import uuid
+import json
 from flask import Blueprint, request, jsonify
 from io import BytesIO
 from PIL import Image
@@ -7,6 +8,7 @@ from PIL import Image
 from src.services.decoder import QRCodeDecoder
 from src.utils.url import download_image
 from src.utils.security import allowed_file
+from src.utils.cache import cache_manager
 from src.schemas.response import APIResponse
 from src.utils.logger import setup_logger
 
@@ -32,6 +34,17 @@ def decode_qr_endpoint():
                 return jsonify(APIResponse.error_response('不支持的文件类型', 400).to_dict()), 400
             
             img_bytes = file.read()
+            
+            cache_key = cache_manager.generate_key(img_bytes)
+            cached_result = cache_manager.get(cache_key)
+            if cached_result:
+                logger.info("命中缓存")
+                result = json.loads(cached_result)
+                return jsonify(APIResponse.success_response({
+                    'result': result['data'],
+                    'type': result['type']
+                }).to_dict())
+            
             img_buffer = BytesIO(img_bytes)
             
             try:
@@ -47,6 +60,7 @@ def decode_qr_endpoint():
                 result = decoder.decode_full(temp_path)
                 
                 if result:
+                    cache_manager.set(cache_key, json.dumps(result))
                     return jsonify(APIResponse.success_response({
                         'result': result['data'],
                         'type': result['type']
@@ -69,6 +83,17 @@ def decode_qr_from_url():
             return jsonify(APIResponse.error_response('缺少URL参数', 400).to_dict()), 400
         
         url = data['url']
+        
+        cache_key = cache_manager.generate_key(url.encode('utf-8'))
+        cached_result = cache_manager.get(cache_key)
+        if cached_result:
+            logger.info("命中缓存")
+            result = json.loads(cached_result)
+            return jsonify(APIResponse.success_response({
+                'result': result['data'],
+                'type': result['type']
+            }).to_dict())
+        
         downloaded_path = download_image(url)
         
         if not downloaded_path:
@@ -78,6 +103,7 @@ def decode_qr_from_url():
             result = decoder.decode_full(downloaded_path)
             
             if result:
+                cache_manager.set(cache_key, json.dumps(result))
                 return jsonify(APIResponse.success_response({
                     'result': result['data'],
                     'type': result['type']
