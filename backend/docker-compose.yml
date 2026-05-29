@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=${SECRET_KEY:-dev-secret-key-change-in-prod}
+    depends_on:
+      - redis
+    networks:
+      - qrcode-network
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - qrcode-network
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+
+networks:
+  qrcode-network:
+    driver: bridge
+
+volumes:
+  redis-data:
+    driver: local
