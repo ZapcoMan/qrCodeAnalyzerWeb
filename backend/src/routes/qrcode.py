@@ -1,16 +1,21 @@
 import os
+import uuid
 from flask import Blueprint, request, jsonify
 from io import BytesIO
 from PIL import Image
 
 from src.services.decoder import QRCodeDecoder
 from src.utils.url import download_image
+from src.utils.security import allowed_file
 from src.schemas.response import APIResponse
 from src.utils.logger import setup_logger
 
 logger = setup_logger()
 qrcode_bp = Blueprint('qrcode', __name__)
 decoder = QRCodeDecoder()
+
+def generate_temp_filename() -> str:
+    return f"temp_{uuid.uuid4().hex[:16]}.png"
 
 @qrcode_bp.route('/decode', methods=['POST'])
 def decode_qr_endpoint():
@@ -23,12 +28,19 @@ def decode_qr_endpoint():
             return jsonify(APIResponse.error_response('没有选择文件', 400).to_dict()), 400
         
         if file:
+            if not allowed_file(file.filename):
+                return jsonify(APIResponse.error_response('不支持的文件类型', 400).to_dict()), 400
+            
             img_bytes = file.read()
             img_buffer = BytesIO(img_bytes)
             
-            img = Image.open(img_buffer)
+            try:
+                img = Image.open(img_buffer)
+            except Exception as e:
+                logger.error(f"无效的图片文件: {e}")
+                return jsonify(APIResponse.error_response('无效的图片文件', 400).to_dict()), 400
             
-            temp_path = "temp_uploaded_qr.png"
+            temp_path = generate_temp_filename()
             img.save(temp_path)
             
             try:

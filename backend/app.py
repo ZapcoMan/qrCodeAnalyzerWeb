@@ -2,6 +2,8 @@ import os
 from flask import Flask, jsonify
 from flask_cors import CORS
 from flask_restx import Api, Resource
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 from config import config_map
 from src.routes.qrcode import qrcode_bp
@@ -16,6 +18,13 @@ def create_app(config_name: str = 'default') -> Flask:
     app.config.from_object(config_map[config_name])
     
     CORS(app)
+    
+    limiter = Limiter(
+        get_remote_address,
+        app=app,
+        storage_uri=app.config.get('RATELIMIT_STORAGE_URI'),
+        default_limits=[app.config.get('RATELIMIT_DEFAULT')]
+    )
     
     api = Api(
         app,
@@ -41,6 +50,10 @@ def create_app(config_name: str = 'default') -> Flask:
     @app.route('/health')
     def health_check():
         return jsonify(APIResponse.success_response({'status': 'healthy'}).to_dict())
+    
+    @app.errorhandler(413)
+    def request_entity_too_large(error):
+        return jsonify(APIResponse.error_response('上传文件大小超过限制（最大16MB）', 413).to_dict()), 413
     
     return app
 
