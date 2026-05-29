@@ -3,10 +3,15 @@ import { ref } from 'vue'
 
 interface DecodeResult {
   success: boolean
-  result: string
-  type: string
+  data?: {
+    result: string
+    type: string
+  }
   error?: string
+  code?: number
 }
+
+const API_BASE_URL = 'http://localhost:5000/api'
 
 const selectedFile = ref<File | null>(null)
 const isLoading = ref(false)
@@ -61,18 +66,30 @@ const decodeQRCode = async () => {
   result.value = null
 
   try {
-    const response = await fetch('/api/decode', {
+    const response = await fetch(`${API_BASE_URL}/decode`, {
       method: 'POST',
       body: formData
     })
 
     const data: DecodeResult = await response.json()
-    result.value = data
+    
+    if (data.success && data.data) {
+      result.value = {
+        success: true,
+        data: {
+          result: data.data.result,
+          type: data.data.type
+        }
+      }
+    } else {
+      result.value = {
+        success: false,
+        error: data.error || '解析失败'
+      }
+    }
   } catch (error) {
     result.value = {
       success: false,
-      result: '',
-      type: '',
       error: (error as Error).message
     }
   } finally {
@@ -182,14 +199,14 @@ const reset = () => {
               <h3>{{ result.success ? '解析成功' : '解析失败' }}</h3>
             </div>
 
-            <div v-if="result.success" class="result-content">
+            <div v-if="result.success && result.data" class="result-content">
               <div class="result-item">
                 <span class="label">内容</span>
-                <span class="value">{{ result.result }}</span>
+                <span class="value">{{ result.data.result }}</span>
               </div>
               <div class="result-item">
                 <span class="label">类型</span>
-                <span class="badge">{{ result.type }}</span>
+                <span class="badge">{{ result.data.type }}</span>
               </div>
             </div>
 
